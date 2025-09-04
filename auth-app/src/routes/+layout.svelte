@@ -57,7 +57,7 @@
 	<nav class="bg-slate-800 shadow-sm border-b border-slate-700">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex justify-between items-center h-16">
-				<!-- Logo -->
+				<!-- Left side - Logo -->
 				<div class="flex items-center">
 					<a href="/" class="text-2xl font-bold text-blue-400 hover:text-blue-300 transition-all duration-200 relative group">
 						ShieldAuth
@@ -65,22 +65,20 @@
 					</a>
 				</div>
 				
-				<!-- Navigation Links -->
-				<div class="hidden md:flex items-center space-x-8">
-					{#if !$page.data.user}
-						<a href="/login" class="px-4 py-2 border border-blue-600 rounded-lg text-sm font-medium text-blue-300 bg-slate-800 hover:bg-slate-700 transition-all duration-200">
-							Login
-						</a>
-						<a href="/register" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200">
-							Register
-						</a>
-					{/if}
-				</div>
-				
-				<!-- Right side - User menu -->
+				<!-- Right side - Navigation Links or User menu -->
 				<div class="flex items-center space-x-4">
-					<!-- User menu -->
-					{#if $page.data.user}
+					{#if !$page.data.user}
+						<!-- Navigation Links for non-authenticated users -->
+						<div class="hidden md:flex items-center space-x-4">
+							<a href="/login" class="px-4 py-2 border border-blue-600 rounded-lg text-sm font-medium text-blue-300 bg-slate-800 hover:bg-slate-700 transition-all duration-200">
+								Login
+							</a>
+							<a href="/register" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200">
+								Register
+							</a>
+						</div>
+					{:else}
+						<!-- User menu for authenticated users -->
 						<div class="relative user-dropdown">
 							<button
 								on:click={toggleUserDropdown}
