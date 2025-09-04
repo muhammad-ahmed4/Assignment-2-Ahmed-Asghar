@@ -12,13 +12,35 @@ A modern, secure authentication application built with the latest web technologi
 
 ## ✨ Features
 
-- 🔐 **Secure Authentication** - Database sessions with bcrypt password hashing
-- 🎨 **Modern UI** - Beautiful interface with dark mode support
-- 📱 **Responsive Design** - Works perfectly on all devices
-- 🚀 **Performance Optimized** - Fast loading and smooth interactions
-- 🛡️ **Security First** - CSRF protection, input validation, and secure sessions
-- 🔄 **Real-time Updates** - Live form validation and error handling
-- 🗄️ **PostgreSQL Sessions** - Secure server-side session management
+### 🔐 **Core Authentication**
+- **Secure Authentication** - Database sessions with bcrypt password hashing
+- **User Registration & Login** - Email and password-based authentication
+- **Protected Routes** - Secure access control for authenticated users
+- **Profile Management** - Users can view and update their profile
+- **Password Change** - Secure password update functionality
+- **Session Management** - 30-day database sessions with automatic cleanup
+
+### 👑 **Role-Based Access Control (RBAC)**
+- **Admin Dashboard** - Comprehensive admin interface with user analytics
+- **User Management** - Advanced user administration with search and filtering
+- **Role Management** - Promote/demote users between user and admin roles
+- **Account Control** - Activate/deactivate user accounts
+- **User Analytics** - Statistics dashboard with user counts and activity metrics
+- **Security Controls** - Self-protection mechanisms for admin accounts
+
+### 🎨 **User Interface**
+- **Modern Dark UI** - Beautiful dark mode interface with consistent theming
+- **Responsive Design** - Works perfectly on all devices and screen sizes
+- **Component Library** - Reusable UI components with TailwindCSS
+- **Real-time Updates** - Live form validation and error handling
+- **Professional Navigation** - Role-based navigation with admin access
+
+### 🛡️ **Security & Performance**
+- **Security First** - CSRF protection, input validation, and secure sessions
+- **Performance Optimized** - Fast loading and smooth interactions
+- **PostgreSQL Sessions** - Secure server-side session management
+- **Type Safety** - Full TypeScript implementation with Drizzle ORM
+- **Production Ready** - Docker deployment with comprehensive configuration
 
 ## 🔧 Environment Variables
 
@@ -87,6 +109,38 @@ The application follows modern web development best practices:
 
 Visit [http://localhost:5173](http://localhost:5173) to see your app!
 
+## 👑 **Admin Features**
+
+### **Getting Admin Access**
+To test admin features, promote a user to admin role:
+```bash
+npm run promote-admin your-email@example.com
+```
+
+### **Admin Dashboard**
+- **URL**: `/admin` (admin users only)
+- **Features**:
+  - User statistics and analytics
+  - Recent user registrations
+  - Quick user management actions
+  - System overview dashboard
+
+### **User Management**
+- **URL**: `/admin/users` (admin users only)
+- **Features**:
+  - View all registered users
+  - Search users by name or email
+  - Filter by role (user/admin) and status (active/inactive)
+  - Change user roles (promote/demote)
+  - Activate/deactivate user accounts
+  - User activity tracking
+
+### **Security Features**
+- **Role-based Access Control** - Only admin users can access admin routes
+- **Self-protection** - Admins cannot modify their own account
+- **API Security** - All admin endpoints require admin authentication
+- **Audit Trail** - User management actions are logged
+
 ## 📚 Documentation
 
 - [Setup Guide](./SETUP.md) - Detailed setup instructions
@@ -98,15 +152,21 @@ Visit [http://localhost:5173](http://localhost:5173) to see your app!
 
 ### Available Scripts
 
+**Development:**
 - `npm run dev` - Start development server
 - `npm run build` - Build for production
 - `npm run preview` - Preview production build
 - `npm run check` - Type checking and linting
+
+**Database Management:**
 - `npm run db:up` - Start PostgreSQL database
 - `npm run db:down` - Stop PostgreSQL database
 - `npm run db:push` - Push database schema changes
 - `npm run db:studio` - Open Drizzle Studio
 - `npm run seed` - Seed database with sample data
+
+**Admin Tools:**
+- `npm run promote-admin <email>` - Promote user to admin role
 
 ### Database Management
 
@@ -141,6 +201,29 @@ npm run db:down
 - **Vite Configuration** - Fast development and optimized builds
 - **Modern ES Target** - Latest JavaScript features
 - **Asset Optimization** - Optimized images and static files
+
+## 🛣️ **Application Routes**
+
+### **Public Routes**
+- `/` - Home page with authentication status
+- `/register` - User registration
+- `/login` - User login
+
+### **Protected Routes (Authentication Required)**
+- `/dashboard` - User dashboard
+- `/profile` - User profile management
+- `/auth/change-password` - Change password functionality
+
+### **Admin Routes (Admin Users Only)**
+- `/admin` - Admin dashboard with user analytics
+- `/admin/users` - User management with search and filtering
+
+### **API Endpoints**
+- `/api/auth/register` - User registration API
+- `/api/auth/change-password` - Password change API
+- `/api/profile` - Profile management API
+- `/api/admin/users/[userId]/toggle-status` - Toggle user status
+- `/api/admin/users/[userId]/change-role` - Change user role
 
 ## 🔒 Security Features
 
