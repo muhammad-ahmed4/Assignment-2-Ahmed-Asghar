@@ -65,29 +65,45 @@
 </script>
 
 <svelte:head>
-	<title>Register - AuthApp</title>
+	<title>Register - ShieldAuth</title>
 	<meta name="description" content="Create a new account" />
 </svelte:head>
 
-<div class="text-center">
-	<!-- Logo and Title -->
-	<div class="mb-8">
-		<a href="/" class="text-3xl font-bold text-blue-600 dark:text-blue-400">
-			AuthApp
-		</a>
-		<h2 class="mt-6 text-3xl font-bold text-slate-900 dark:text-white">
-			Create your account
-		</h2>
-		<p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-			Already have an account?{' '}
-			<a href="/login" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors">
-				Sign in here
-			</a>
-		</p>
+<!-- Background with centered form -->
+<div class="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8 relative">
+	<!-- Background Images -->
+	<div class="absolute inset-0">
+		<div class="absolute inset-0 bg-cover bg-center bg-no-repeat dark:hidden" 
+			 style="background-image: url('/images/backgrounds/light-bg.jpg');"></div>
+		<div class="absolute inset-0 bg-cover bg-center bg-no-repeat hidden dark:block" 
+			 style="background-image: url('/images/backgrounds/dark-bg.jpg');"></div>
+		<!-- Overlay for better readability -->
+		<div class="absolute inset-0 bg-black/50 dark:bg-black/30"></div>
 	</div>
 	
-	<!-- Registration Form -->
-	<form on:submit|preventDefault={handleSubmit} class="space-y-6">
+	<!-- Centered Form Container -->
+	<div class="relative z-10 w-full max-w-md">
+		<!-- Form Box -->
+		<div class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 p-8">
+			<!-- Logo and Title -->
+			<div class="text-center mb-8">
+				<a href="/" class="text-3xl font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200 relative group">
+					ShieldAuth
+					<span class="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+				</a>
+				<h2 class="mt-6 text-2xl font-bold text-slate-900 dark:text-white">
+					Create your account
+				</h2>
+				<p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+					Already have an account?{' '}
+					<a href="/login" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors">
+						Sign in here
+					</a>
+				</p>
+			</div>
+			
+			<!-- Registration Form -->
+			<form on:submit|preventDefault={handleSubmit} class="space-y-6" autocomplete="off">
 		<!-- Success Message -->
 		{#if success}
 			<div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
@@ -132,6 +148,8 @@
 					type="text"
 					bind:value={name}
 					required
+					autocomplete="off"
+					autofill="off"
 					class="appearance-none relative block w-full px-3 py-3 border border-slate-300 dark:border-slate-600 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white bg-white dark:bg-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors"
 					placeholder="Enter your full name"
 				/>
@@ -150,6 +168,8 @@
 					type="email"
 					bind:value={email}
 					required
+					autocomplete="off"
+					autofill="off"
 					class="appearance-none relative block w-full px-3 py-3 border border-slate-300 dark:border-slate-600 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white bg-white dark:bg-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors"
 					placeholder="Enter your email"
 				/>
@@ -168,6 +188,8 @@
 					type="password"
 					bind:value={password}
 					required
+					autocomplete="new-password"
+					autofill="off"
 					class="appearance-none relative block w-full px-3 py-3 border border-slate-300 dark:border-slate-600 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white bg-white dark:bg-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors"
 					placeholder="Create a password (min. 8 characters)"
 				/>
@@ -186,6 +208,8 @@
 					type="password"
 					bind:value={confirmPassword}
 					required
+					autocomplete="new-password"
+					autofill="off"
 					class="appearance-none relative block w-full px-3 py-3 border border-slate-300 dark:border-slate-600 placeholder-slate-500 dark:placeholder-slate-400 text-slate-900 dark:text-white bg-white dark:bg-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors"
 					placeholder="Confirm your password"
 				/>
@@ -209,6 +233,8 @@
 					Create account
 				{/if}
 			</button>
+			</div>
+		</form>
 		</div>
-	</form>
+	</div>
 </div>

@@ -10,29 +10,45 @@
 </script>
 
 <svelte:head>
-	<title>Login - AuthApp</title>
+	<title>Login - ShieldAuth</title>
 	<meta name="description" content="Sign in to your account" />
 </svelte:head>
 
-<div class="text-center">
-	<!-- Logo and Title -->
-	<div class="mb-8">
-		<a href="/" class="text-3xl font-bold text-blue-600 dark:text-blue-400">
-			AuthApp
-		</a>
-		<h2 class="mt-6 text-3xl font-bold text-slate-900 dark:text-white">
-			Sign in to your account
-		</h2>
-		<p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
-			Or{' '}
-			<a href="/register" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors">
-				create a new account
-			</a>
-		</p>
+<!-- Background with centered form -->
+<div class="min-h-screen flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8 relative">
+	<!-- Background Images -->
+	<div class="absolute inset-0">
+		<div class="absolute inset-0 bg-cover bg-center bg-no-repeat dark:hidden" 
+			 style="background-image: url('/images/backgrounds/light-bg.jpg');"></div>
+		<div class="absolute inset-0 bg-cover bg-center bg-no-repeat hidden dark:block" 
+			 style="background-image: url('/images/backgrounds/dark-bg.jpg');"></div>
+		<!-- Overlay for better readability -->
+		<div class="absolute inset-0 bg-black/50 dark:bg-black/30"></div>
 	</div>
 	
-	<!-- Login Form -->
-	<form method="POST" use:enhance class="space-y-6">
+	<!-- Centered Form Container -->
+	<div class="relative z-10 w-full max-w-md">
+		<!-- Form Box -->
+		<div class="bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-white/20 dark:border-slate-700/50 p-8">
+			<!-- Logo and Title -->
+			<div class="text-center mb-8">
+				<a href="/" class="text-3xl font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-all duration-200 relative group">
+					ShieldAuth
+					<span class="absolute bottom-0 left-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 transition-all duration-200 group-hover:w-full"></span>
+				</a>
+				<h2 class="mt-6 text-2xl font-bold text-slate-900 dark:text-white">
+					Sign in to your account
+				</h2>
+				<p class="mt-2 text-sm text-slate-600 dark:text-slate-400">
+					Or{' '}
+					<a href="/register" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors">
+						create a new account
+					</a>
+				</p>
+			</div>
+			
+			<!-- Login Form -->
+			<form method="POST" use:enhance class="space-y-6">
 		<!-- Error Message -->
 		{#if $page.form?.error}
 			<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
@@ -91,6 +107,8 @@
 			>
 				Sign in
 			</button>
+			</div>
+		</form>
 		</div>
-	</form>
+	</div>
 </div>
