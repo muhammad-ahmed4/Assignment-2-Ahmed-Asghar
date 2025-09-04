@@ -11,15 +11,6 @@ export default defineConfig({
 	build: {
 		target: 'esnext', // Target modern browsers for better performance
 		minify: 'esbuild', // Use esbuild for faster minification
-		rollupOptions: {
-			output: {
-				manualChunks: {
-					// Split vendor chunks for better caching
-					vendor: ['@auth/core', '@auth/sveltekit', '@auth/drizzle-adapter'],
-					ui: ['svelte', '@sveltejs/kit']
-				}
-			}
-		}
 	},
 	// Development optimizations
 	server: {

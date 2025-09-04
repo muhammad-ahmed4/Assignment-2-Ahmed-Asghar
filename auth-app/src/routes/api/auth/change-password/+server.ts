@@ -2,7 +2,7 @@ import { json } from "@sveltejs/kit";
 import { db } from "$lib/server/db.js";
 import { users } from "$lib/server/db/schema.js";
 import { eq } from "drizzle-orm";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import type { RequestHandler } from "./$types.js";
 
 export const PUT: RequestHandler = async ({ request, locals }) => {
@@ -42,7 +42,7 @@ export const PUT: RequestHandler = async ({ request, locals }) => {
     // Verify current password
     const isCurrentPasswordValid = await bcrypt.compare(
       currentPassword,
-      currentUser[0].hashedPassword || ""
+      currentUser[0].password || ""
     );
 
     if (!isCurrentPasswordValid) {
@@ -56,7 +56,7 @@ export const PUT: RequestHandler = async ({ request, locals }) => {
     await db
       .update(users)
       .set({
-        hashedPassword: hashedNewPassword,
+        password: hashedNewPassword,
         updatedAt: new Date(),
       })
       .where(eq(users.id, locals.user.id));
