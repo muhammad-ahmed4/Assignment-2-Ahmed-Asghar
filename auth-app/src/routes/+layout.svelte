@@ -145,10 +145,10 @@
 							
 							<!-- Dropdown menu -->
 							{#if showUserDropdown}
-								<div class="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-1 z-50">
+								<div class="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-800 rounded-lg shadow-lg border border-slate-200 dark:border-slate-700 py-1 z-50">
 									<div class="px-4 py-2 border-b border-slate-200 dark:border-slate-700">
 										<p class="text-sm font-medium text-slate-900 dark:text-white">{$page.data.user.name || 'User'}</p>
-										<p class="text-xs text-slate-500 dark:text-slate-400">{$page.data.user.email}</p>
+										<p class="text-xs text-slate-500 dark:text-slate-400 break-all">{$page.data.user.email}</p>
 									</div>
 									<a
 										href="/dashboard"

@@ -44,7 +44,7 @@
 			 style="background-image: url('/images/backgrounds/dark-bg.jpg');"></div>
 		
 		<!-- Overlay for better text readability -->
-		<div class="absolute inset-0 bg-black/50 dark:bg-black/30"></div>
+		<div class="absolute inset-0 bg-black/20 dark:bg-black/30"></div>
 		
 		<!-- Subtle pattern overlay for texture -->
 		<div class="absolute inset-0 opacity-10 dark:opacity-5" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSIjZTBmN2ZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiIGZpbGwtcnVsZT0iZXZlbm9kZCI+PHBhdGggZD0iTTIwIDIwYzAtNS41LTQuNS0xMC0xMC0xMHMtMTAgNC41LTEwIDEwIDQuNSAxMCAxMCAxMCAxMC00LjUgMTAtMTB6bTEwIDBjMC01LjUtNC41LTEwLTEwLTEwcy0xMCA0LjUtMTAgMTAgNC41IDEwIDEwIDEwIDEwLTQuNSAxMC0xMHoiLz48L2c+PC9zdmc+'); background-size: 40px 40px;"></div>
@@ -133,8 +133,8 @@
 		<div class="space-y-4">
 			{#if $page.data.user}
 				<div class="space-y-4">
-					<p class="text-lg text-slate-700 dark:text-slate-300">
-						Welcome back, <span class="font-semibold text-blue-600 dark:text-blue-400">{$page.data.user.email}</span>!
+					<p class="text-lg text-white dark:text-slate-300 drop-shadow-lg">
+						Welcome back, <span class="font-semibold text-blue-300 dark:text-blue-400">{$page.data.user.email}</span>!
 					</p>
 					<div class="flex flex-col sm:flex-row gap-4 justify-center">
 						<a
