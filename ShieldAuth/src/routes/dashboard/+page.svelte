@@ -122,7 +122,7 @@
 				</a>
 				
 				<a
-					href="/auth/change-password"
+					href="/dashboard/change-password"
 					class="flex items-center p-3 rounded-lg border border-slate-600 hover:bg-slate-700 transition-colors"
 				>
 					<svg class="w-5 h-5 text-indigo-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

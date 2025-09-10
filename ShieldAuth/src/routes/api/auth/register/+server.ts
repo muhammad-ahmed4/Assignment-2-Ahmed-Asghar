@@ -4,6 +4,7 @@ import { users } from "$lib/server/db/schema.js";
 import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { nanoid } from "nanoid";
+import { TokenService } from "$lib/server/tokens";
 import type { RequestHandler } from "./$types.js";
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -27,9 +28,9 @@ export const POST: RequestHandler = async ({ request }) => {
 
     // Check if user already exists
     const existingUser = await db.query.users.findFirst({
-      where: eq(users.email, email)
+      where: eq(users.email, email),
     });
-    
+
     if (existingUser) {
       return json(
         { error: "User with this email already exists" },
@@ -48,19 +49,29 @@ export const POST: RequestHandler = async ({ request }) => {
         name,
         email,
         password: hashedPassword,
-        emailVerified: new Date(), // Auto-verify for simplicity
-        role: 'user',
-        isActive: true
+        emailVerified: null, // Require email verification
+        role: "user",
+        isActive: true,
       })
       .returning();
+
+    // Send email verification
+    const emailSent = await TokenService.sendEmailVerification(
+      newUser[0].id,
+      newUser[0].email,
+      newUser[0].name || "User"
+    );
 
     // Return success (don't return password)
     const { password: _, ...userWithoutPassword } = newUser[0];
 
     return json(
       {
-        message: "User created successfully",
+        message: emailSent
+          ? "User created successfully. Please check your email to verify your account."
+          : "User created successfully, but verification email could not be sent. Please contact support.",
         user: userWithoutPassword,
+        emailVerificationSent: emailSent,
       },
       { status: 201 }
     );

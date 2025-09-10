@@ -173,6 +173,13 @@
 						</div>
 					</div>
 					
+					<!-- Forgot Password Link -->
+					<div class="text-right">
+						<a href="/auth/forgot-password" class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors">
+							Forgot your password?
+						</a>
+					</div>
+					
 					<!-- Submit Button -->
 					<div>
 						<button
