@@ -10,7 +10,7 @@ import { TokenService } from "$lib/server/tokens";
 export const load: PageServerLoad = async ({ locals }) => {
   // Redirect if already authenticated
   if (locals.auth?.user) {
-    throw redirect(303, "/dashboard");
+    throw redirect(303, "/");
   }
 
   return {};

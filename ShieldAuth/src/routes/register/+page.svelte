@@ -20,12 +20,19 @@
 		}
 	}
 	
-	function handleSubmit() {
+	function handleSubmit({ result, update }) {
 		if (password !== confirmPassword) {
 			passwordError = 'Passwords do not match';
-			return false;
+			return;
 		}
-		return true;
+		
+		// If there's an error, show it
+		if (result.type === 'failure') {
+			passwordError = result.data?.error || 'Registration failed';
+		}
+		
+		// If successful, the server will redirect
+		update();
 	}
 </script>
 
