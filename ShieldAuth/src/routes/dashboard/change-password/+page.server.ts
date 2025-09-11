@@ -17,67 +17,69 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-  default: async ({ request, locals }) => {
+  default: async ({ locals }) => {
     try {
+      console.log("Change password action started");
+
       // Check if user is authenticated
       if (!locals.auth?.user) {
+        console.log("User not authenticated");
         return fail(401, {
           error: "Authentication required",
         });
       }
 
-      const data = await request.formData();
-      const email = data.get("email") as string;
-
-      if (!email) {
-        return fail(400, {
-          error: "Email is required",
-        });
-      }
-
-      // Find user by email
-      const user = await db.query.users.findFirst({
-        where: eq(users.email, email),
+      // Use the authenticated user's email directly (no form data needed)
+      const user = locals.auth.user;
+      console.log("User authenticated:", {
+        id: user.id,
+        email: user.email,
+        name: user.name,
       });
 
-      if (!user) {
-        return fail(404, {
-          error: "User not found",
-        });
-      }
-
-      // Verify the email matches the authenticated user
-      if (user.id !== locals.auth.user.id) {
-        return fail(403, {
-          error: "Email does not match your account",
-        });
-      }
-
-      // Send password reset email
+      // Send password reset email using the authenticated user's email
+      console.log("Sending password reset email...");
       const emailSent = await TokenService.sendPasswordReset(
         user.id,
         user.email,
         user.name || "User"
       );
 
+      console.log("Email sent result:", emailSent);
+
       if (!emailSent) {
+        console.log("Failed to send email");
         return fail(500, {
           error: "Failed to send password reset email",
         });
       }
 
-      // Redirect to check email page
-      throw redirect(
-        303,
-        `/auth/check-email?context=password-change&email=${encodeURIComponent(
-          email
-        )}&sent=${emailSent}`
-      );
+      // Redirect to check email page with user's email
+      const redirectUrl = `/checks/check-email?context=password-change&email=${encodeURIComponent(
+        user.email
+      )}&userId=${user.id}&name=${encodeURIComponent(
+        user.name || "User"
+      )}&sent=true`;
+
+      console.log("Redirecting to:", redirectUrl);
+      throw redirect(303, redirectUrl);
     } catch (error) {
-      if (error instanceof Error && error.message.includes("redirect")) {
-        throw error; // Re-throw redirect errors
+      // Check if this is a redirect (which is expected and should be re-thrown)
+      if (
+        error &&
+        typeof error === "object" &&
+        "status" in error &&
+        "location" in error
+      ) {
+        console.log("Redirect (this is expected):", error);
+        throw error; // Re-throw redirect
       }
+
       console.error("Request password change error:", error);
+      console.error("Error details:", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       return fail(500, {
         error: "Internal server error",
       });

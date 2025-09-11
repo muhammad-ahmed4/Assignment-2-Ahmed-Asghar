@@ -28,8 +28,8 @@
   });
 
   async function sendVerificationEmail() {
-    if (!email || !userId || !name) {
-      error = 'Missing required information';
+    if (!email) {
+      error = 'Email address not found';
       return;
     }
 
@@ -38,17 +38,21 @@
     message = '';
 
     try {
-      const response = await fetch('/api/auth/send-verification', {
+      // Use different endpoints based on context
+      const endpoint = context === 'password-change' 
+        ? '/api/auth/forgot-password' 
+        : '/api/auth/send-verification';
+
+      const requestBody = context === 'password-change' 
+        ? { email }  // forgot-password only needs email
+        : { userId, email, name, context };  // send-verification needs more data
+
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          userId,
-          email,
-          name,
-          context 
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
@@ -57,18 +61,22 @@
         message = data.message;
         emailSent = true;
       } else {
-        error = data.error || 'Failed to send verification email';
+        error = data.error || 'Failed to send email';
       }
     } catch (err) {
       error = 'Network error. Please try again.';
-      console.error('Send verification error:', err);
+      console.error('Send email error:', err);
     } finally {
       loading = false;
     }
   }
 
   function goBack() {
-    goto('/register');
+    if (context === 'password-change') {
+      goto('/dashboard');
+    } else {
+      goto('/register');
+    }
   }
 </script>
 

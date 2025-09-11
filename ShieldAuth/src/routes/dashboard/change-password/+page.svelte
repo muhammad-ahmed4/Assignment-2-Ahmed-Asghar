@@ -32,7 +32,7 @@
         </h1>
         
         <p class="text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
-          Enter your email address to receive a password reset link.
+          Click the button below to receive a password reset link at your registered email address.
         </p>
       </div>
 
@@ -68,36 +68,24 @@
         </div>
       {/if}
 
-      <!-- Form -->
-      <form method="POST" class="space-y-6">
-        <!-- Email Field -->
-        <div>
-          <label for="email" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-            Email Address
-          </label>
-          <div class="relative">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="h-5 w-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-              </svg>
+      <!-- Email Display -->
+      {#if $page.data.user?.email}
+        <div class="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div class="flex items-center">
+            <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+            </svg>
+            <div>
+              <p class="text-sm font-medium text-blue-800 dark:text-blue-200">Password reset will be sent to:</p>
+              <p class="text-sm text-blue-700 dark:text-blue-300 break-all">{$page.data.user.email}</p>
             </div>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              value={$page.data.user?.email || ''}
-              readonly
-              class="block w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors"
-              placeholder="Enter your email address"
-            />
           </div>
-          <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            This is your registered email address
-          </p>
         </div>
+      {/if}
 
-        <!-- Action Buttons -->
-        <div class="space-y-4">
+      <!-- Action Buttons -->
+      <div class="space-y-4">
+        <form method="POST">
           <button
             type="submit"
             class="group relative w-full flex justify-center items-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
@@ -107,19 +95,19 @@
             </svg>
             Send Password Reset Link
           </button>
-          
-          <button
-            type="button"
-            on:click={() => goto('/dashboard')}
-            class="w-full flex justify-center items-center py-3 px-4 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
-          >
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Back to Dashboard
-          </button>
-        </div>
-      </form>
+        </form>
+        
+        <button
+          type="button"
+          on:click={() => goto('/dashboard')}
+          class="w-full flex justify-center items-center py-3 px-4 border border-slate-300 dark:border-slate-600 text-sm font-medium rounded-lg text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Dashboard
+        </button>
+      </div>
 
       <!-- Security Notice -->
       <div class="mt-8 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">

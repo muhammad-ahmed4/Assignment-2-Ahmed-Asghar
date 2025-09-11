@@ -90,7 +90,7 @@
     } finally {
       loading = false;
     }
-  }
+  }page 
 </script>
 
 <svelte:head>
