@@ -47,6 +47,7 @@ export const sessions = pgTable("sessions", {
 
 // Verification tokens table for email verification and password reset
 export const verificationTokens = pgTable("verification_tokens", {
+  id: serial("id").primaryKey(),
   identifier: varchar("identifier", { length: 255 }).notNull(),
   token: varchar("token", { length: 255 }).notNull(),
   expires: timestamp("expires").notNull(),
