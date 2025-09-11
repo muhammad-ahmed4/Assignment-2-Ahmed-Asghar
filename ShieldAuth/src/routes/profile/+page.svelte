@@ -1,9 +1,84 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
+	import { invalidateAll } from '$app/navigation';
 	
 	let name = $page.data.user?.name || '';
 	let email = $page.data.user?.email || '';
+	let selectedFile: File | null = null;
+	
+	// Handle file selection
+	function handleFileSelect(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const file = target.files?.[0];
+		
+		if (file) {
+			// Validate file type
+			if (!file.type.startsWith('image/')) {
+				alert('Please select an image file');
+				return;
+			}
+			
+			// Validate file size (max 5MB)
+			if (file.size > 5 * 1024 * 1024) {
+				alert('File size must be less than 5MB');
+				return;
+			}
+			
+			selectedFile = file;
+		}
+	}
+	
+	// Handle profile picture upload
+	async function handleImageUpload() {
+		if (!selectedFile) return;
+		
+		try {
+			const formData = new FormData();
+			formData.append('image', selectedFile);
+			
+			const response = await fetch('/api/profile/upload-image', {
+				method: 'POST',
+				body: formData
+			});
+			
+			if (response.ok) {
+				// Refresh page data to show new image
+				await invalidateAll();
+				selectedFile = null;
+			} else {
+				const error = await response.json();
+				alert(error.message || 'Failed to upload image');
+			}
+		} catch (error) {
+			console.error('Upload error:', error);
+			alert('Failed to upload image');
+		}
+	}
+	
+	// Handle profile picture deletion
+	async function handleImageDelete() {
+		if (!confirm('Are you sure you want to delete your profile picture?')) {
+			return;
+		}
+		
+		try {
+			const response = await fetch('/api/profile/delete-image', {
+				method: 'DELETE'
+			});
+			
+			if (response.ok) {
+				// Refresh page data to show updated image
+				await invalidateAll();
+			} else {
+				const error = await response.json();
+				alert(error.message || 'Failed to delete image');
+			}
+		} catch (error) {
+			console.error('Delete error:', error);
+			alert('Failed to delete image');
+		}
+	}
 </script>
 
 <svelte:head>
@@ -19,6 +94,114 @@
 			Manage your account information and preferences
 		</p>
 	</div>
+
+	<!-- Profile Picture Section (Only for non-OAuth users) -->
+	{#if $page.data.user?.password}
+		<div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6 mb-6">
+			<h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-4">Profile Picture</h3>
+			
+			<div class="flex items-center space-x-6">
+				<!-- Current Profile Picture -->
+				<div class="flex-shrink-0 relative group">
+					{#if $page.data.user?.image}
+						<img src={$page.data.user.image} alt="Profile" class="w-20 h-20 rounded-full object-cover" />
+						<!-- Delete button overlay -->
+						<button
+							type="button"
+							onclick={handleImageDelete}
+							class="absolute -top-2 -right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+							title="Delete profile picture"
+						>
+							<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+							</svg>
+						</button>
+					{:else}
+						<div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+							{$page.data.user?.email?.charAt(0).toUpperCase()}
+						</div>
+					{/if}
+				</div>
+				
+				<!-- Upload Section -->
+				<div class="flex-1">
+					<div class="space-y-4">
+						<!-- File Input -->
+						<div>
+							<label for="profile-image" class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+								Upload New Picture
+							</label>
+							<div class="relative">
+								<input
+									id="profile-image"
+									type="file"
+									accept="image/*"
+									onchange={handleFileSelect}
+									class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+								/>
+								<div class="relative border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-6 text-center hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-slate-700/50 transition-all duration-200 cursor-pointer group">
+									<svg class="mx-auto h-12 w-12 text-slate-400 group-hover:text-blue-500 transition-colors" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+										<path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+									</svg>
+									<div class="mt-2">
+										<p class="text-sm font-medium text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+											Click to upload
+										</p>
+										<p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+											PNG, JPG, GIF up to 5MB
+										</p>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<!-- File Selected and Upload Button -->
+						{#if selectedFile}
+							<div class="space-y-3">
+								<div class="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4">
+									<div class="flex items-center space-x-3">
+										<svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+										</svg>
+										<div>
+											<p class="text-sm font-medium text-slate-900 dark:text-white">File Selected</p>
+											<p class="text-xs text-slate-500 dark:text-slate-400">{selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)</p>
+										</div>
+									</div>
+								</div>
+								<div class="flex space-x-3">
+									<button
+										type="button"
+										onclick={handleImageUpload}
+										class="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-md hover:shadow-lg"
+									>
+										<svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+										</svg>
+										Upload Picture
+									</button>
+									<button
+										type="button"
+										onclick={() => {
+											selectedFile = null;
+											const input = document.getElementById('profile-image') as HTMLInputElement;
+											if (input) input.value = '';
+										}}
+										class="px-6 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 text-sm font-medium rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-400 dark:hover:border-slate-500 transition-all duration-200 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+									>
+										<svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+										</svg>
+										Cancel
+									</button>
+								</div>
+							</div>
+						{/if}
+					</div>
+				</div>
+			</div>
+		</div>
+	{/if}
 
 	<!-- Profile Form -->
 	<div class="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-6">
