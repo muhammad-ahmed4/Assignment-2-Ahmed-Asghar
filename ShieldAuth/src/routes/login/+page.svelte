@@ -5,7 +5,7 @@
 	
 	// Redirect if already logged in
 	$: if ($page.data.user) {
-		goto('/dashboard');
+		goto('/');
 	}
 </script>
 

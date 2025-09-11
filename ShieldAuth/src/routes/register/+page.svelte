@@ -9,7 +9,7 @@
 	
 	// Redirect if already logged in
 	$: if ($page.data.user) {
-		goto('/dashboard');
+		goto('/');
 	}
 	
 	// Client-side password validation

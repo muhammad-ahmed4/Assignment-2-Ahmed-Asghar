@@ -73,7 +73,7 @@
 
   function goBack() {
     if (context === 'password-change') {
-      goto('/dashboard');
+      goto('/');
     } else {
       goto('/register');
     }
