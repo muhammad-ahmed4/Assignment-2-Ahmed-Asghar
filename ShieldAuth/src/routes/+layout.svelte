@@ -3,6 +3,8 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { goto } from '$app/navigation';
+	import { signOut } from '@auth/sveltekit/client';
+	import { invalidateAll } from '$app/navigation';
 	
 	// User dropdown state
 	let showUserDropdown = false;
@@ -20,15 +22,21 @@
 		}
 	}
 	
-	// Handle logout
+	// Handle logout using Auth.js
 	async function handleLogout() {
 		try {
-			const response = await fetch('/logout', { method: 'POST' });
-			if (response.ok) {
-				goto('/');
-			}
+			// Close dropdown first
+			showUserDropdown = false;
+			
+			// Use Auth.js signOut function
+			await signOut({ redirectTo: '/' });
+			
+			// Invalidate all page data to refresh user state
+			await invalidateAll();
 		} catch (error) {
 			console.error('Logout error:', error);
+			// Fallback: force page reload if Auth.js logout fails
+			window.location.href = '/';
 		}
 	}
 	

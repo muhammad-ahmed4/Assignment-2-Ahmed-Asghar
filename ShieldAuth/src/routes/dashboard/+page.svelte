@@ -2,6 +2,8 @@
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
+	import { signOut } from '@auth/sveltekit/client';
+	import { invalidateAll } from '$app/navigation';
 	
 	// Redirect if not authenticated
 	$: if (!$page.data.user) {
@@ -13,6 +15,21 @@
 		accountAge: '0 days',
 		loginCount: 1
 	};
+	
+	// Handle logout using Auth.js
+	async function handleLogout() {
+		try {
+			// Use Auth.js signOut function
+			await signOut({ redirectTo: '/' });
+			
+			// Invalidate all page data to refresh user state
+			await invalidateAll();
+		} catch (error) {
+			console.error('Logout error:', error);
+			// Fallback: force page reload if Auth.js logout fails
+			window.location.href = '/';
+		}
+	}
 	
 	onMount(() => {
 		// Calculate account age
@@ -131,17 +148,15 @@
 					<span class="text-slate-300">Change Password</span>
 				</a>
 				
-				<form method="POST" action="/logout" class="w-full">
-					<button
-						type="submit"
-						class="flex items-center w-full p-3 rounded-lg border border-slate-600 hover:bg-slate-700 transition-colors text-left"
-					>
-						<svg class="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-						</svg>
-						<span class="text-slate-300">Sign Out</span>
-					</button>
-				</form>
+				<button
+					onclick={handleLogout}
+					class="flex items-center w-full p-3 rounded-lg border border-slate-600 hover:bg-slate-700 transition-colors text-left"
+				>
+					<svg class="w-5 h-5 text-red-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+					</svg>
+					<span class="text-slate-300">Sign Out</span>
+				</button>
 			</div>
 		</div>
 		
