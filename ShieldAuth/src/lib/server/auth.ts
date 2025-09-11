@@ -188,6 +188,11 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
           (session.user as any).id = dbUser.id;
           (session.user as any).role = dbUser.role;
           (session.user as any).isActive = dbUser.isActive;
+          (session.user as any).name = dbUser.name;
+          (session.user as any).image = dbUser.image;
+          (session.user as any).emailVerified = dbUser.emailVerified;
+          (session.user as any).createdAt = dbUser.createdAt;
+          (session.user as any).updatedAt = dbUser.updatedAt;
         }
       }
       return session;
