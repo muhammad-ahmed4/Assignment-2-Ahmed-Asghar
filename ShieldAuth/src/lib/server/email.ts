@@ -81,12 +81,13 @@ export class EmailService {
             .content { padding: 30px; background: #f9fafb; }
             .button { 
               display: inline-block; 
-              background: #3b82f6; 
-              color: white; 
+              background: #1f2937; 
+              color: #ffffff !important; 
               padding: 12px 24px; 
               text-decoration: none; 
               border-radius: 6px; 
               margin: 20px 0;
+              font-weight: 600;
             }
             .footer { padding: 20px; text-align: center; color: #6b7280; font-size: 14px; }
           </style>
