@@ -8,7 +8,7 @@ This application uses custom ports to avoid conflicts with other applications:
 
 - **PostgreSQL Database**: Port `5433` (instead of default 5432)
 - **pgAdmin**: Port `8081` (instead of default 8080)
-- **Application**: Port `3000` (default)
+- **Application**: Port `5173` (default)
 
 Make sure to update your `.env` file with the correct database URL:
 
