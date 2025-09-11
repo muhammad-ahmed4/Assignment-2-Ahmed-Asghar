@@ -38,12 +38,12 @@
 	
 	// Handle Google OAuth sign-in
 	async function handleGoogleSignIn() {
-		await signIn('google', { callbackUrl: '/dashboard' });
+		await signIn('google', { callbackUrl: '/' });
 	}
 	
 	// Handle GitHub OAuth sign-in
 	async function handleGitHubSignIn() {
-		await signIn('github', { callbackUrl: '/dashboard' });
+		await signIn('github', { callbackUrl: '/' });
 	}
 </script>
 
