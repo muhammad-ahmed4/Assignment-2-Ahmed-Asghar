@@ -90,7 +90,7 @@
     } finally {
       loading = false;
     }
-  }page 
+  }page tin
 </script>
 
 <svelte:head>

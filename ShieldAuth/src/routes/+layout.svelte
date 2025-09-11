@@ -53,8 +53,8 @@
 </svelte:head>
 
 <div class="min-h-screen bg-slate-900">
-	<!-- Navigation - Hidden on login and register pages -->
-	{#if $page.url.pathname !== '/login' && $page.url.pathname !== '/register'}
+	<!-- Navigation - Hidden on auth pages -->
+	{#if !$page.url.pathname.startsWith('/auth') && $page.url.pathname !== '/login' && $page.url.pathname !== '/register' && !$page.url.pathname.startsWith('/checks')}
 	<nav class="bg-slate-800 shadow-sm border-b border-slate-700">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 			<div class="flex justify-between items-center h-16">
