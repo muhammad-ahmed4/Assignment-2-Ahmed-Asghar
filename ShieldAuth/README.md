@@ -30,9 +30,11 @@ DATABASE_URL="postgresql://postgres:ahmed123@localhost:5433/Authapp"
 
 - **Secure Authentication** - Database sessions with bcrypt password hashing
 - **User Registration & Login** - Email and password-based authentication
+- **OAuth Integration** - Google and GitHub sign-in/registration
 - **Protected Routes** - Secure access control for authenticated users
 - **Profile Management** - Users can view and update their profile
-- **Password Change** - Secure password update functionality
+- **Profile Pictures** - Upload and manage custom profile pictures (email users only)
+- **Password Change** - Secure password update functionality (email users only)
 - **Session Management** - 30-day database sessions with automatic cleanup
 
 ### 👑 **Role-Based Access Control (RBAC)**
@@ -75,6 +77,12 @@ DATABASE_URL="postgresql://postgres:password@localhost:5432/authapp"
 # Authentication Secret (Required - generate a strong random string)
 AUTH_SECRET="your-super-secret-auth-key-here"
 
+# OAuth Configuration (Optional - for Google and GitHub login)
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+
 # Environment (Optional)
 NODE_ENV="development"
 ```
@@ -85,6 +93,8 @@ NODE_ENV="development"
 - `DATABASE_URL` must be a valid PostgreSQL connection string
 - `AUTH_SECRET` should be a strong, random string (32+ characters recommended)
 - Generate a secure secret: `openssl rand -base64 32`
+- OAuth credentials are optional - app works with email/password only
+- See [OAuth Setup Guide](./OAUTH_SETUP.md) for detailed OAuth configuration
 
 ## 🏗️ Architecture
 
@@ -174,9 +184,33 @@ npm run promote-admin your-email@example.com
 - **API Security** - All admin endpoints require admin authentication
 - **Audit Trail** - User management actions are logged
 
+## 🔗 OAuth Integration
+
+### **Supported Providers**
+
+- **Google OAuth** - Sign in with Google account
+- **GitHub OAuth** - Sign in with GitHub account
+- **Email/Password** - Traditional authentication method
+
+### **OAuth Features**
+
+- **Seamless Integration** - Users can sign in with social accounts
+- **Account Linking** - OAuth accounts are linked to existing email accounts
+- **Profile Sync** - Automatically syncs name and profile picture from OAuth providers
+- **Flexible Authentication** - Users can use any combination of authentication methods
+
+### **Profile Picture Management**
+
+- **OAuth Users** - Keep their social media profile pictures (Google/GitHub)
+- **Email Users** - Can upload custom profile pictures from their device
+- **File Validation** - Supports PNG, JPG, GIF up to 5MB
+- **Secure Storage** - Images stored in `static/uploads/profiles/` directory
+- **Delete Functionality** - Users can remove their uploaded profile pictures
+
 ## 📚 Documentation
 
 - [Setup Guide](./SETUP.md) - Detailed setup instructions
+- [OAuth Setup Guide](./OAUTH_SETUP.md) - Google and GitHub OAuth configuration
 - [API Documentation](./docs/api.md) - API endpoints and usage
 - [Component Library](./docs/components.md) - Reusable UI components
 - [Database Schema](./docs/schema.md) - Database structure and relationships
@@ -252,8 +286,8 @@ npm run db:down
 ### **Protected Routes (Authentication Required)**
 
 - `/dashboard` - User dashboard
-- `/profile` - User profile management
-- `/auth/change-password` - Change password functionality
+- `/profile` - User profile management with picture upload
+- `/auth/change-password` - Change password functionality (email users only)
 
 ### **Admin Routes (Admin Users Only)**
 
@@ -265,6 +299,8 @@ npm run db:down
 - `/api/auth/register` - User registration API
 - `/api/auth/change-password` - Password change API
 - `/api/profile` - Profile management API
+- `/api/profile/upload-image` - Upload profile picture API
+- `/api/profile/delete-image` - Delete profile picture API
 - `/api/admin/users/[userId]/toggle-status` - Toggle user status
 - `/api/admin/users/[userId]/change-role` - Change user role
 
