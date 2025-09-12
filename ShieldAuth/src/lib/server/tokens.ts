@@ -1,6 +1,6 @@
 import { db } from "./db";
 import { verificationTokens } from "./db/schema";
-import { eq, and, gt } from "drizzle-orm";
+import { eq, and, gt, lt } from "drizzle-orm";
 import { EmailService } from "./email";
 
 export type TokenType = "email_verification" | "password_reset";
@@ -118,7 +118,7 @@ export class TokenService {
     type?: TokenType
   ): Promise<void> {
     try {
-      const conditions = [gt(new Date(), verificationTokens.expires)];
+      const conditions = [lt(verificationTokens.expires, new Date())];
 
       if (userId) {
         conditions.push(eq(verificationTokens.userId, userId));

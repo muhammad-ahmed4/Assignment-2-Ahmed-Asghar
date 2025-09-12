@@ -19,11 +19,18 @@ export const load: PageServerLoad = async ({ locals }) => {
 export const actions: Actions = {
   default: async ({ request }) => {
     try {
+      console.log("Registration action started");
       const data = await request.formData();
       const name = data.get("name") as string;
       const email = data.get("email") as string;
       const password = data.get("password") as string;
       const confirmPassword = data.get("confirmPassword") as string;
+
+      console.log("Form data received:", {
+        name,
+        email,
+        password: password ? "***" : "missing",
+      });
 
       // Validation
       if (!name || !email || !password || !confirmPassword) {
@@ -56,9 +63,12 @@ export const actions: Actions = {
       }
 
       // Hash password
+      console.log("Hashing password...");
       const hashedPassword = await bcrypt.hash(password, 12);
+      console.log("Password hashed successfully");
 
       // Create user with proper ID format
+      console.log("Creating user in database...");
       const newUser = await db
         .insert(users)
         .values({
@@ -71,25 +81,47 @@ export const actions: Actions = {
           isActive: true,
         })
         .returning();
+      console.log("User created successfully:", newUser[0].id);
 
       // Send email verification
-      const emailSent = await TokenService.sendEmailVerification(
-        newUser[0].id,
-        newUser[0].email,
-        newUser[0].name || "User"
-      );
-
-      // Redirect to check email page
-      throw redirect(
-        303,
-        `/auth/check-email?context=registration&email=${encodeURIComponent(
-          email
-        )}&sent=${emailSent}`
-      );
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("redirect")) {
-        throw error; // Re-throw redirect errors
+      let emailSent = false;
+      try {
+        console.log("Attempting to send email verification...");
+        emailSent = await TokenService.sendEmailVerification(
+          newUser[0].id,
+          newUser[0].email,
+          newUser[0].name || "User"
+        );
+        console.log("Email verification result:", emailSent);
+      } catch (emailError) {
+        console.error("Email verification error:", emailError);
+        console.error("Email error details:", emailError.message);
+        // Don't fail registration if email fails, but still redirect to check email page
+        emailSent = false;
       }
+
+      // Return success with redirect info
+      const redirectUrl = `/checks/check-email?context=registration&email=${encodeURIComponent(
+        email
+      )}&sent=${emailSent}`;
+
+      return {
+        success: true,
+        message: "Registration successful! Redirecting to check your email...",
+        redirectUrl: redirectUrl,
+        emailSent: emailSent,
+      };
+    } catch (error) {
+      // Check if this is a redirect (which is expected behavior)
+      if (
+        error &&
+        typeof error === "object" &&
+        "status" in error &&
+        error.status === 303
+      ) {
+        throw error; // Re-throw redirects - they are not errors
+      }
+
       console.error("Registration error:", error);
       return fail(500, {
         error: "Internal server error",

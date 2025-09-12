@@ -7,6 +7,7 @@
 	let password = '';
 	let confirmPassword = '';
 	let passwordError = '';
+	let successMessage = '';
 	
 	// Redirect if already logged in
 	$: if ($page.data.user) {
@@ -21,19 +22,58 @@
 		}
 	}
 	
-	function handleSubmit({ result, update }) {
+	function handleSubmit() {
+		console.log('Form submission started');
+		
+		// Clear any previous errors
+		passwordError = '';
+		
+		// Client-side validation
 		if (password !== confirmPassword) {
 			passwordError = 'Passwords do not match';
-			return;
+			return { cancel: true };
 		}
 		
-		// If there's an error, show it
-		if (result.type === 'failure') {
-			passwordError = result.data?.error || 'Registration failed';
+		if (password.length < 8) {
+			passwordError = 'Password must be at least 8 characters long';
+			return { cancel: true };
 		}
 		
-		// If successful, the server will redirect
-		update();
+		// Return a function to handle the result
+		return async ({ result, update }) => {
+			console.log('Form submitted, result:', result);
+			
+			if (result.type === 'failure') {
+				passwordError = result.data?.error || 'Registration failed';
+				console.log('Form submission failed:', result.data);
+			} else if (result.type === 'success') {
+				console.log('Form submission successful');
+				
+				// Check if we have a redirect URL
+				if (result.data?.redirectUrl) {
+					console.log('Redirecting to:', result.data.redirectUrl);
+					
+					// Show success message
+					passwordError = '';
+					successMessage = result.data.message || 'Registration successful! Redirecting...';
+					
+					// Wait 2 seconds then redirect
+					setTimeout(() => {
+						goto(result.data.redirectUrl);
+					}, 2000);
+					
+					// Don't call update() - we're redirecting
+					return;
+				}
+			} else if (result.type === 'redirect') {
+				console.log('Form submission successful, redirecting to:', result.location);
+				// Don't call update() for redirects - let SvelteKit handle it
+				return;
+			}
+			
+			// Only update for other responses
+			await update();
+		};
 	}
 	
 	// Handle Google OAuth sign-in
@@ -190,7 +230,7 @@
 				</div>
 				
 				<!-- Registration Form -->
-				<form method="POST" use:enhance={handleSubmit} class="space-y-6" autocomplete="off">
+				<form method="POST" use:enhance={handleSubmit} class="space-y-6" autocomplete="off" onsubmit={() => console.log('Form being submitted...')}>
 					<!-- Error Messages -->
 					{#if $page.form?.error}
 						<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
@@ -217,6 +257,21 @@
 								</div>
 								<div class="ml-3">
 									<p class="text-sm text-red-700 dark:text-red-200">{passwordError}</p>
+								</div>
+							</div>
+						</div>
+					{/if}
+					
+					{#if successMessage}
+						<div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+							<div class="flex">
+								<div class="flex-shrink-0">
+									<svg class="h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+									</svg>
+								</div>
+								<div class="ml-3">
+									<p class="text-sm text-green-700 dark:text-green-200">{successMessage}</p>
 								</div>
 							</div>
 						</div>
