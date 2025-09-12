@@ -25,7 +25,7 @@ export const users = pgTable("users", {
 
 // Accounts table for Auth.js
 export const accounts = pgTable("accounts", {
-  id: varchar("id", { length: 255 }).primaryKey(),
+  id: serial("id").primaryKey(),
   userId: varchar("user_id", { length: 255 }).notNull(),
   type: varchar("type", { length: 255 }).notNull(),
   provider: varchar("provider", { length: 255 }).notNull(),

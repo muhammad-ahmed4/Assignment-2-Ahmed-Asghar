@@ -92,69 +92,47 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
       if (account?.provider === "google" || account?.provider === "github") {
         if (user?.email) {
           try {
-            const existingUser = await db.query.users.findFirst({
-              where: eq(users.email, user.email),
+            // Check if this OAuth account already exists
+            const existingAccount = await db.query.accounts.findFirst({
+              where: (accountsTable, { and, eq }) =>
+                and(
+                  eq(accountsTable.provider, account.provider),
+                  eq(accountsTable.providerAccountId, account.providerAccountId)
+                ),
             });
 
-            if (existingUser) {
-              // Check if this OAuth account is already linked
-              const existingAccount = await db.query.accounts.findFirst({
-                where: (accountsTable, { and, eq }) =>
-                  and(
-                    eq(accountsTable.userId, existingUser.id),
-                    eq(accountsTable.provider, account.provider)
-                  ),
+            if (!existingAccount) {
+              // Create new OAuth account entry (no user in users table for OAuth)
+              await db.insert(accounts).values({
+                userId: user.id, // Use the generated user ID from Auth.js
+                type: String(account.type || "oauth"),
+                provider: String(account.provider || ""),
+                providerAccountId: String(account.providerAccountId || ""),
+                refresh_token: account.refresh_token
+                  ? String(account.refresh_token)
+                  : null,
+                access_token: account.access_token
+                  ? String(account.access_token)
+                  : null,
+                expires_at:
+                  typeof account.expires_at === "number"
+                    ? account.expires_at
+                    : null,
+                token_type: account.token_type
+                  ? String(account.token_type)
+                  : null,
+                scope: account.scope ? String(account.scope) : null,
+                id_token: account.id_token ? String(account.id_token) : null,
+                session_state: account.session_state
+                  ? String(account.session_state)
+                  : null,
               });
-
-              if (!existingAccount) {
-                // Link the OAuth account to the existing user
-                await db.insert(accounts).values({
-                  userId: existingUser.id,
-                  type: String(account.type || "oauth"),
-                  provider: String(account.provider || ""),
-                  providerAccountId: String(account.providerAccountId || ""),
-                  refresh_token: account.refresh_token
-                    ? String(account.refresh_token)
-                    : null,
-                  access_token: account.access_token
-                    ? String(account.access_token)
-                    : null,
-                  expires_at:
-                    typeof account.expires_at === "number"
-                      ? account.expires_at
-                      : null,
-                  token_type: account.token_type
-                    ? String(account.token_type)
-                    : null,
-                  scope: account.scope ? String(account.scope) : null,
-                  id_token: account.id_token ? String(account.id_token) : null,
-                  session_state: account.session_state
-                    ? String(account.session_state)
-                    : null,
-                });
-                console.log(
-                  `🔗 Manually linked ${account.provider} account to existing user: ${user.email}`
-                );
-              }
-
-              // Update existing user with OAuth info and verify email
-              await db
-                .update(users)
-                .set({
-                  emailVerified: new Date(),
-                  updatedAt: new Date(),
-                  // Update name and image from OAuth if not already set
-                  name: existingUser.name || user.name,
-                  image: user.image || existingUser.image,
-                })
-                .where(eq(users.email, user.email));
-
               console.log(
-                `✅ Successfully updated existing user: ${user.email}`
+                `🔗 Created new ${account.provider} account: ${user.email}`
               );
             } else {
               console.log(
-                `📝 New ${account.provider} user will be created: ${user.email}`
+                `✅ Existing ${account.provider} account found: ${user.email}`
               );
             }
           } catch (error) {
@@ -181,10 +159,13 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
     // Enhance session with user data from database
     async session({ session }) {
       if (session.user?.email) {
+        // First check if it's a regular user (in users table)
         const dbUser = await db.query.users.findFirst({
           where: eq(users.email, session.user.email),
         });
+
         if (dbUser) {
+          // Regular user (email/password signup)
           (session.user as any).id = dbUser.id;
           (session.user as any).role = dbUser.role;
           (session.user as any).isActive = dbUser.isActive;
@@ -193,6 +174,24 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
           (session.user as any).emailVerified = dbUser.emailVerified;
           (session.user as any).createdAt = dbUser.createdAt;
           (session.user as any).updatedAt = dbUser.updatedAt;
+          (session.user as any).userType = "regular";
+        } else {
+          // OAuth user (only in accounts table)
+          const oauthAccount = await db.query.accounts.findFirst({
+            where: (accountsTable, { and, eq }) =>
+              and(
+                eq(accountsTable.userId, session.user.id),
+                eq(accountsTable.provider, "google") // or check for both google and github
+              ),
+          });
+
+          if (oauthAccount) {
+            (session.user as any).userType = "oauth";
+            (session.user as any).provider = oauthAccount.provider;
+            (session.user as any).role = "user"; // Default role for OAuth users
+            (session.user as any).isActive = true; // Default active for OAuth users
+            (session.user as any).emailVerified = new Date(); // OAuth emails are verified
+          }
         }
       }
       return session;

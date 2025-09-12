@@ -39,7 +39,7 @@
 			{#if $page.data.user}
 				<div class="space-y-4">
 					<p class="text-lg text-white drop-shadow-lg">
-						Welcome back, <span class="font-semibold text-blue-300">{$page.data.user.email}</span>!
+						Welcome back, <span class="font-semibold text-blue-300">{$page.data.user.name || $page.data.user.email}</span>!
 					</p>
 					<div class="flex flex-col sm:flex-row gap-4 justify-center">
 						<a

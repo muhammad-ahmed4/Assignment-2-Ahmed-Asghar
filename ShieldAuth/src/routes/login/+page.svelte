@@ -5,18 +5,37 @@
 	import { page } from '$app/stores';
 	
 	// Redirect if already logged in
-	$: if ($page.data.user) {
-		goto('/');
-	}
+	$effect(() => {
+		if ($page.data.user) {
+			goto('/');
+		}
+	});
+	
+	// Handle OAuth errors
+	let oauthError = $state('');
+	$effect(() => {
+		const error = $page.url.searchParams.get('error');
+		if (error === 'OAuthAccountNotLinked') {
+			oauthError = 'This email is already registered. Please sign in with your email and password first, then you can link your Google account from your profile.';
+		} else if (error === 'OAuthSignin') {
+			oauthError = 'There was an error signing in with OAuth. Please try again.';
+		} else if (error === 'OAuthCallback') {
+			oauthError = 'OAuth callback error. Please try again.';
+		} else if (error) {
+			oauthError = 'Authentication error. Please try again.';
+		} else {
+			oauthError = '';
+		}
+	});
 	
 	// Handle Google OAuth sign-in
 	async function handleGoogleSignIn() {
-		await signIn('google', { callbackUrl: '/' });
+		await signIn('google', { callbackUrl: '/dashboard' });
 	}
 	
 	// Handle GitHub OAuth sign-in
 	async function handleGitHubSignIn() {
-		await signIn('github', { callbackUrl: '/' });
+		await signIn('github', { callbackUrl: '/dashboard' });
 	}
 </script>
 
@@ -161,6 +180,22 @@
 						<span class="px-2 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400">Or continue with email</span>
 					</div>
 				</div>
+				
+				<!-- OAuth Error Message -->
+				{#if oauthError}
+					<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+						<div class="flex">
+							<div class="flex-shrink-0">
+								<svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+							</div>
+							<div class="ml-3">
+								<p class="text-sm text-red-700 dark:text-red-200">{oauthError}</p>
+							</div>
+						</div>
+					</div>
+				{/if}
 				
 				<!-- Login Form -->
 				<form method="POST" use:enhance class="space-y-6">

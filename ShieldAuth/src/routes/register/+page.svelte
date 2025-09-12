@@ -4,23 +4,25 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	
-	let password = '';
-	let confirmPassword = '';
-	let passwordError = '';
-	let successMessage = '';
+	let password = $state('');
+	let confirmPassword = $state('');
+	let passwordError = $state('');
+	let successMessage = $state('');
 	
 	// Redirect if already logged in
-	$: if ($page.data.user) {
-		goto('/');
-	}
+	$effect(() => {
+		if ($page.data.user) {
+			goto('/');
+		}
+	});
 	
 	// Client-side password validation
-	$: {
+	$effect(() => {
 		passwordError = '';
 		if (password && confirmPassword && password !== confirmPassword) {
 			passwordError = 'Passwords do not match';
 		}
-	}
+	});
 	
 	function handleSubmit() {
 		console.log('Form submission started');
@@ -40,7 +42,7 @@
 		}
 		
 		// Return a function to handle the result
-		return async ({ result, update }) => {
+		return async ({ result, update }: { result: any; update: any }) => {
 			console.log('Form submitted, result:', result);
 			
 			if (result.type === 'failure') {
@@ -76,14 +78,31 @@
 		};
 	}
 	
+	// Handle OAuth errors
+	let oauthError = $state('');
+	$effect(() => {
+		const error = $page.url.searchParams.get('error');
+		if (error === 'OAuthAccountNotLinked') {
+			oauthError = 'This email is already registered. Please sign in with your email and password first, then you can link your Google account from your profile.';
+		} else if (error === 'OAuthSignin') {
+			oauthError = 'There was an error signing in with OAuth. Please try again.';
+		} else if (error === 'OAuthCallback') {
+			oauthError = 'OAuth callback error. Please try again.';
+		} else if (error) {
+			oauthError = 'Authentication error. Please try again.';
+		} else {
+			oauthError = '';
+		}
+	});
+	
 	// Handle Google OAuth sign-in
 	async function handleGoogleSignIn() {
-		await signIn('google', { callbackUrl: '/' });
+		await signIn('google', { callbackUrl: '/dashboard' });
 	}
 	
 	// Handle GitHub OAuth sign-in
 	async function handleGitHubSignIn() {
-		await signIn('github', { callbackUrl: '/' });
+		await signIn('github', { callbackUrl: '/dashboard' });
 	}
 </script>
 
@@ -229,6 +248,22 @@
 					</div>
 				</div>
 				
+				<!-- OAuth Error Message -->
+				{#if oauthError}
+					<div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+						<div class="flex">
+							<div class="flex-shrink-0">
+								<svg class="h-5 w-5 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+								</svg>
+							</div>
+							<div class="ml-3">
+								<p class="text-sm text-red-700 dark:text-red-200">{oauthError}</p>
+							</div>
+						</div>
+					</div>
+				{/if}
+				
 				<!-- Registration Form -->
 				<form method="POST" use:enhance={handleSubmit} class="space-y-6" autocomplete="off" onsubmit={() => console.log('Form being submitted...')}>
 					<!-- Error Messages -->
@@ -294,7 +329,6 @@
 								type="text"
 								required
 								autocomplete="off"
-								autofill="off"
 								class="block w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors"
 								placeholder="Enter your full name"
 							/>
@@ -318,7 +352,6 @@
 								type="email"
 								required
 								autocomplete="off"
-								autofill="off"
 								class="block w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors"
 								placeholder="Enter your email"
 							/>
@@ -343,7 +376,6 @@
 								bind:value={password}
 								required
 								autocomplete="new-password"
-								autofill="off"
 								class="block w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors"
 								placeholder="Create a password (min. 8 characters)"
 							/>
@@ -368,7 +400,6 @@
 								bind:value={confirmPassword}
 								required
 								autocomplete="new-password"
-								autofill="off"
 								class="block w-full pl-10 pr-3 py-3 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 transition-colors"
 								placeholder="Confirm your password"
 							/>
