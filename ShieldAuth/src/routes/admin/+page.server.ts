@@ -1,8 +1,8 @@
 import type { PageServerLoad } from "./$types";
 import { redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db.js";
-import { users } from "$lib/server/db/schema.js";
-import { count, desc, eq, gte } from "drizzle-orm";
+import { users, sessions } from "$lib/server/db/schema.js";
+import { count, desc, eq, gte, sql } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ locals }) => {
   // Check if user is authenticated and is admin
@@ -17,16 +17,19 @@ export const load: PageServerLoad = async ({ locals }) => {
   try {
     // Get user statistics
     const totalUsers = await db.select({ count: count() }).from(users);
+
+    // Active users are those with valid sessions (not expired)
     const activeUsers = await db
       .select({ count: count() })
-      .from(users)
-      .where(eq(users.isActive, true));
+      .from(sessions)
+      .where(sql`${sessions.expires} > NOW()`);
+
     const adminUsers = await db
       .select({ count: count() })
       .from(users)
       .where(eq(users.role, "admin"));
 
-    // Get recent users (last 10)
+    // Get recent users (last 10) with session-based activity status
     const recentUsers = await db
       .select({
         id: users.id,
@@ -35,6 +38,11 @@ export const load: PageServerLoad = async ({ locals }) => {
         role: users.role,
         createdAt: users.createdAt,
         isActive: users.isActive,
+        hasActiveSession: sql<boolean>`EXISTS(
+          SELECT 1 FROM ${sessions} 
+          WHERE ${sessions.userId} = ${users.id} 
+          AND ${sessions.expires} > NOW()
+        )`.as("hasActiveSession"),
       })
       .from(users)
       .orderBy(desc(users.createdAt))

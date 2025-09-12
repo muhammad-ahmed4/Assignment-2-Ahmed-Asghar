@@ -22,22 +22,23 @@
 		});
 	}
 
-	// Toggle user active status
-	async function toggleUserStatus(userId: string, currentStatus: boolean) {
+	// Toggle user active status (delete/restore session)
+	async function toggleUserStatus(userId: string, hasActiveSession: boolean) {
 		try {
-			const response = await fetch(`/api/admin/users/${userId}/toggle-status`, {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ isActive: !currentStatus }),
-			});
-
-			if (response.ok) {
-				// Refresh the page to show updated data
-				window.location.reload();
+			if (hasActiveSession) {
+				// Deactivate: Delete user's session
+				const response = await fetch(`/api/admin/users/${userId}/deactivate`, {
+					method: 'DELETE',
+				});
+				
+				if (response.ok) {
+					window.location.reload();
+				} else {
+					alert('Failed to deactivate user');
+				}
 			} else {
-				alert('Failed to update user status');
+				// Activate: This would require the user to log in again
+				alert('User needs to log in again to become active');
 			}
 		} catch (error) {
 			console.error('Error updating user status:', error);
@@ -190,8 +191,8 @@
 								</span>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap">
-								<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {user.isActive ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}">
-									{user.isActive ? 'Active' : 'Inactive'}
+								<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {user.hasActiveSession ? 'bg-green-900/30 text-green-400' : 'bg-red-900/30 text-red-400'}">
+									{user.hasActiveSession ? 'Active' : 'Inactive'}
 								</span>
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
@@ -199,10 +200,10 @@
 							</td>
 							<td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
 								<button
-									on:click={() => toggleUserStatus(user.id, user.isActive)}
+									on:click={() => toggleUserStatus(user.id, user.hasActiveSession)}
 									class="text-blue-400 hover:text-blue-300 transition-colors"
 								>
-									{user.isActive ? 'Deactivate' : 'Activate'}
+									{user.hasActiveSession ? 'Deactivate' : 'Activate'}
 								</button>
 							</td>
 						</tr>

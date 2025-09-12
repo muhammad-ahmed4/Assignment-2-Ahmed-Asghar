@@ -20,11 +20,21 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
     Google({
       clientId: env.GOOGLE_CLIENT_ID,
       clientSecret: env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          scope: "openid email profile",
+        },
+      },
     }),
     // GitHub OAuth Provider
     GitHub({
       clientId: env.GITHUB_CLIENT_ID,
       clientSecret: env.GITHUB_CLIENT_SECRET,
+      authorization: {
+        params: {
+          scope: "read:user user:email",
+        },
+      },
     }),
     // Credentials Provider (existing email/password login)
     Credentials({
@@ -77,73 +87,39 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
         `🔗 Account linked: ${account.provider} for user ${user.email}`
       );
     },
-    async createUser({ user }) {
+    async createUser({ user, profile }) {
       console.log(`👤 New user created via OAuth: ${user.email}`);
+
+      // Update user with profile image from OAuth provider
+      if (user.id && profile?.picture) {
+        try {
+          await db
+            .update(users)
+            .set({
+              image: profile.picture,
+              name: profile.name || user.name,
+              emailVerified: new Date(),
+            })
+            .where(eq(users.id, user.id));
+          console.log(`🖼️ Updated user profile image: ${user.email}`);
+        } catch (error) {
+          console.error("❌ Error updating user profile:", error);
+        }
+      }
     },
   },
   callbacks: {
-    // Handle account linking and user creation for OAuth
+    // Handle OAuth sign-ins - let the adapter handle account creation
     async signIn({ user, account, profile }) {
       console.log(
         `SignIn callback - Provider: ${account?.provider}, Email: ${user?.email}`
       );
 
-      // Allow OAuth sign-ins (Google & GitHub)
+      // Allow OAuth sign-ins (Google & GitHub) - adapter will handle account creation
       if (account?.provider === "google" || account?.provider === "github") {
-        if (user?.email) {
-          try {
-            // Check if this OAuth account already exists
-            const existingAccount = await db.query.accounts.findFirst({
-              where: (accountsTable, { and, eq }) =>
-                and(
-                  eq(accountsTable.provider, account.provider),
-                  eq(accountsTable.providerAccountId, account.providerAccountId)
-                ),
-            });
-
-            if (!existingAccount) {
-              // Create new OAuth account entry (no user in users table for OAuth)
-              await db.insert(accounts).values({
-                userId: user.id, // Use the generated user ID from Auth.js
-                type: String(account.type || "oauth"),
-                provider: String(account.provider || ""),
-                providerAccountId: String(account.providerAccountId || ""),
-                refresh_token: account.refresh_token
-                  ? String(account.refresh_token)
-                  : null,
-                access_token: account.access_token
-                  ? String(account.access_token)
-                  : null,
-                expires_at:
-                  typeof account.expires_at === "number"
-                    ? account.expires_at
-                    : null,
-                token_type: account.token_type
-                  ? String(account.token_type)
-                  : null,
-                scope: account.scope ? String(account.scope) : null,
-                id_token: account.id_token ? String(account.id_token) : null,
-                session_state: account.session_state
-                  ? String(account.session_state)
-                  : null,
-              });
-              console.log(
-                `🔗 Created new ${account.provider} account: ${user.email}`
-              );
-            } else {
-              console.log(
-                `✅ Existing ${account.provider} account found: ${user.email}`
-              );
-            }
-          } catch (error) {
-            console.error(
-              `❌ Error in signIn callback for ${account.provider}:`,
-              error
-            );
-            // Still allow the sign-in to proceed
-          }
-        }
-        // Always return true for OAuth providers to allow account linking
+        console.log(
+          `✅ Allowing ${account.provider} sign-in for: ${user.email}`
+        );
         return true;
       }
 
@@ -159,13 +135,13 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
     // Enhance session with user data from database
     async session({ session }) {
       if (session.user?.email) {
-        // First check if it's a regular user (in users table)
+        // Check if it's a regular user (email/password signup)
         const dbUser = await db.query.users.findFirst({
           where: eq(users.email, session.user.email),
         });
 
-        if (dbUser) {
-          // Regular user (email/password signup)
+        if (dbUser && dbUser.password) {
+          // Regular user (email/password signup) - has password field
           (session.user as any).id = dbUser.id;
           (session.user as any).role = dbUser.role;
           (session.user as any).isActive = dbUser.isActive;
@@ -175,8 +151,21 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
           (session.user as any).createdAt = dbUser.createdAt;
           (session.user as any).updatedAt = dbUser.updatedAt;
           (session.user as any).userType = "regular";
-        } else {
-          // OAuth user (only in accounts table)
+        } else if (dbUser && !dbUser.password) {
+          // OAuth user (created by adapter but no password)
+          (session.user as any).id = dbUser.id;
+          (session.user as any).role = dbUser.role || "user";
+          (session.user as any).isActive = dbUser.isActive !== false; // Default to true
+          (session.user as any).name = dbUser.name || session.user.name;
+          // Use the image from OAuth provider (session.user.image) instead of database
+          (session.user as any).image = session.user.image || dbUser.image;
+          (session.user as any).emailVerified =
+            dbUser.emailVerified || new Date();
+          (session.user as any).createdAt = dbUser.createdAt;
+          (session.user as any).updatedAt = dbUser.updatedAt;
+          (session.user as any).userType = "oauth";
+
+          // Get provider info from accounts table
           const oauthAccount = await db.query.accounts.findFirst({
             where: (accountsTable, { and, eq }) =>
               and(
@@ -186,11 +175,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
           });
 
           if (oauthAccount) {
-            (session.user as any).userType = "oauth";
             (session.user as any).provider = oauthAccount.provider;
-            (session.user as any).role = "user"; // Default role for OAuth users
-            (session.user as any).isActive = true; // Default active for OAuth users
-            (session.user as any).emailVerified = new Date(); // OAuth emails are verified
           }
         }
       }
